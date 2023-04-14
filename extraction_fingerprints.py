@@ -92,7 +92,7 @@ def create_fingerprint():
     
 
 def correlation():
-    name_file = "test.jpg"
+    name_file = "test/test.jpg"
     img, mode = imread2f(name_file, channel=1)
     noise_test = genNoiseprint(img,200)
 
