@@ -92,35 +92,38 @@ def create_fingerprint():
     
 
 def correlation():
-    name_file = "test/test.jpg"
-    img, mode = imread2f(name_file, channel=1)
-    noise_test = genNoiseprint(img,200)
+    list_test_images = os.listdir("./test/")
+    for image in list_test_images:
+        try:
+            img, mode = imread2f("./test/"+image, channel=1)
+            noise_test = genNoiseprint(img,200)
+            fingerprints = os.listdir("./fingerprints_resized/")
+            max_score = 0
+            min_score = 100000000
+            name = ""
+            name_distance = ""
+            for device in fingerprints:
+                fingerprint = np.load('./fingerprints_resized/'+device)
+                cc2d = crosscorr_2d(fingerprint, noise_test)     
+                pce_score = pce(cc2d)['pce'] 
+                dist = np.linalg.norm(fingerprint-noise_test)
+                if pce_score > max_score:
+                    max_score = pce_score
+                    name = device
+                if dist < min_score:
+                    min_score = dist
+                    name_distance = device
+                
+            
+            print(image+" ---> "+name+" using the correlation")
+            print(image+" ---> "+name_distance+" using the euclidian distance")
 
-    fingerprints = os.listdir("./fingerprints_resized/")
-    max_score = 0
-    min_score = 100000000
-    name = ""
-    name_distance = ""
-    for device in fingerprints:
-        fingerprint = np.load('./fingerprints_resized/'+device)
-        cc2d = crosscorr_2d(fingerprint, noise_test)
-        
-        print(device+" V.S. "+name_file+" :")
-        pce_score = pce(cc2d)['pce'] 
-        print(pce_score)
-        dist = np.linalg.norm(fingerprint-noise_test)
-        print(dist)
-        if pce_score > max_score:
-            max_score = pce_score
-            name = device
-        if dist < min_score:
-            min_score = dist
-            name_distance = device
-        
-    
-    print("The photo is taken by "+name+" using the correlation")
-    print("The photo is taken by "+name_distance+" using the euclidian distance")
-        
+            name = ""
+            name_distance = ""
+            max_score = 0
+            min_score = 100000000
+        except:
+            print("")
 
 
 
