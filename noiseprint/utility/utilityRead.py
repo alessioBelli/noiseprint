@@ -17,7 +17,7 @@ import numpy as np
 
 def imread2f_pil(stream, channel = 1, dtype = np.float32):
     img = Image.open(stream)
-    img = img.resize((500,500))
+    img = img.resize((128,128))
     mode = img.mode
     
     if channel == 3:

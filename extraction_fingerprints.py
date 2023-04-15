@@ -69,7 +69,7 @@ def pce(cc: np.ndarray, neigh_radius: int = 2) -> dict:
     return out
 
 def training():
-    ff_dirlist = np.array(sorted(glob('data/*')))
+    ff_dirlist = np.array(sorted(glob('train/*')))
     ff_device = np.array([os.path.split(i)[1].rsplit('_', 1)[0] for i in ff_dirlist])
     fingerprint_device = sorted(np.unique(ff_device))
 
@@ -204,7 +204,6 @@ def testing():
             dist = np.linalg.norm(fingerprint_k-natural_w)
             euclidian_rot[fingerprint_idx, natural_idx] = dist
 
-    print(euclidian_rot)
     accuracy = accuracy_score(gt.argmax(0), euclidian_rot.argmin(0))
     print(accuracy)
 
@@ -232,6 +231,6 @@ def testing():
 
 
 if __name__ == "__main__":
-    #training()
+    training()
     #correlation()
-    testing()
+    #testing()
