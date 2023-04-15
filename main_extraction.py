@@ -67,7 +67,6 @@ fingerprint_device = sorted(np.unique(ff_device))
 
 # for each device, we extract the images belonging to that device and we compute the corresponding noiseprint, which is saved in the array k
 for device in fingerprint_device:
-    imgs = []
     i=0
     for img_path in ff_dirlist[ff_device == device]:
         img, mode = imread2f(img_path, channel=1)
