@@ -52,6 +52,37 @@ def crosscorr_2d(k1: np.ndarray, k2: np.ndarray) -> np.ndarray:
 
     return np.real(ifft2(k1_fft * k2_fft)).astype(np.float32)
 
+def aligned_cc(k1: np.ndarray, k2: np.ndarray) -> dict:
+    """
+    Aligned PRNU cross-correlation
+    :param k1: (n1,nk) or (n1,nk1,nk2,...)
+    :param k2: (n2,nk) or (n2,nk1,nk2,...)
+    :return: {'cc':(n1,n2) cross-correlation matrix,'ncc':(n1,n2) normalized cross-correlation matrix}
+    """
+
+    # Type cast
+    k1 = np.array(k1).astype(np.float32)
+    k2 = np.array(k2).astype(np.float32)
+
+    ndim1 = k1.ndim
+    ndim2 = k2.ndim
+    assert (ndim1 == ndim2)
+
+    k1 = np.ascontiguousarray(k1).reshape(k1.shape[0], -1)
+    k2 = np.ascontiguousarray(k2).reshape(k2.shape[0], -1)
+
+    assert (k1.shape[1] == k2.shape[1])
+
+    k1_norm = np.linalg.norm(k1, ord=2, axis=1, keepdims=True)
+    k2_norm = np.linalg.norm(k2, ord=2, axis=1, keepdims=True)
+
+    k2t = np.ascontiguousarray(k2.transpose())
+
+    cc = np.matmul(k1, k2t).astype(np.float32)
+    ncc = (cc / (k1_norm * k2_norm.transpose())).astype(np.float32)
+
+    return {'cc': cc, 'ncc': ncc}
+
 def pce(cc: np.ndarray, neigh_radius: int = 2) -> dict:
     """
     PCE position and value
