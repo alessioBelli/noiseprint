@@ -71,7 +71,7 @@ def compute_noiseprints():
         noises = []
         for img_path in ff_dirlist[ff_device == device]:
             img, mode = imread2f(img_path, channel=1)
-            img = cut_ctr(img, (64, 64))
+            img = cut_ctr(img, (512, 512))
             try:
                 QF = jpeg_qtableinv(strimgfilenameeam)
             except:
@@ -115,7 +115,7 @@ def compute_residuals():
     w=[]
     for img_path in nat_dirlist:
         img, mode = imread2f(img_path, channel=1)
-        img = cut_ctr(img, (64, 64))
+        img = cut_ctr(img, (512, 512))
         try:
             QF = jpeg_qtableinv(strimgfilenameeam)
         except:
