@@ -1,0 +1,7 @@
+AUC on CC 0.50
+Accuracy CC 0.09
+
+AUC on PCE 0.50
+Accuracy PCE 0.09
+
+Accuracy with Euclidean Distance 0.30
