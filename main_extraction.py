@@ -62,60 +62,42 @@ fingerprint_device = sorted(np.unique(ff_device))
 nat_dirlist = np.array(sorted(glob.glob('data/test/*')))
 nat_device = np.array([os.path.split(i)[1].rsplit('_', 1)[0] for i in nat_dirlist])
 
-def compute_noiseprints():
+def compute_noiseprints(crop_size):
     print('Computing fingerprints...')
     # for each device, we extract the images belonging to that device and we compute the corresponding noiseprint, which is saved in the array k
     k = []
     for device in fingerprint_device:
-        i=0
+        print('Computing fingerprint of device: ' + device + '...')
         noises = []
         for img_path in ff_dirlist[ff_device == device]:
             img, mode = imread2f(img_path, channel=1)
-            img = cut_ctr(img, (512, 512))
+            img = cut_ctr(img, crop_size)
             try:
                 QF = jpeg_qtableinv(strimgfilenameeam)
             except:
                 QF = 200
             res = genNoiseprint(img,QF)
             noises.append(res)
-            np.save("noises/"+device+"_"+str(i), res)
-            i=i+1
         fingerprint = np.average(noises, axis=0)
         np.save("noiseprints/fingerprint_"+device+".npy", fingerprint)
         k+=[fingerprint]
     return k
-'''
-def load_noiseprints():
-    k = []
-    noiseprints_dirlist = np.array(sorted(glob.glob('noises/*')))
-    noise_device = np.array([os.path.split(i)[1].rsplit('_', 1)[0] for i in noiseprints_dirlist])
-    for device in fingerprint_device:
-        noises = []
-        for noise in noiseprints_dirlist[noise_device == device]:
-            noises.append(np.load(noise))
-        fingerprint = np.average(noises, axis=0)
-        np.save("noiseprints/fingerprint_"+device+".npy", fingerprint)
-        k+=[fingerprint]'''
-'''
-# Compute the average noiseprint for each device and save the noiseprints in k
-k = []
-noiseprints_dirlist = np.array(sorted(glob.glob('noises/*')))
-noise_device = np.array([os.path.split(i)[1].rsplit('_', 1)[0] for i in noiseprints_dirlist])
-for device in fingerprint_device:
-    noises = []
-    for noise in noiseprints_dirlist[noise_device == device]:
-        noises.append(np.load(noise))
-    fingerprint = np.average(noises, axis=0)
-    np.save("noiseprints/fingerprint_"+device+".npy", fingerprint)
-    k+=[fingerprint]'''
 
-def compute_residuals():
+def load_noiseprints():
+    print("Loading noiseprints...")
+    k = []
+    noiseprints_dirlist = np.array(sorted(glob.glob('noiseprints/*')))
+    for noise in noiseprints_dirlist:
+        k+=[np.load(noise)]
+    return k
+
+def compute_residuals(crop_size):
     print('Computing residuals...')
     # for each device, we extract the images belonging to that device and we compute the corresponding noiseprint, which is saved in the array w
     w=[]
     for img_path in nat_dirlist:
         img, mode = imread2f(img_path, channel=1)
-        img = cut_ctr(img, (512, 512))
+        img = cut_ctr(img, crop_size)
         try:
             QF = jpeg_qtableinv(strimgfilenameeam)
         except:
@@ -123,15 +105,22 @@ def compute_residuals():
         w+=[genNoiseprint(img,QF)]
     return w
 
-def plot_device(fingerprint_device, natural_indices, pce_values):
+def plot_device(fingerprint_device, natural_indices, values, label):
+    # here we took 3 as our input
+    n = 10 #number of test images for each device
+    avgResult = []
+    # calculates the average
+    avgResult = np.average(np.asarray(values).reshape(-1, n), axis=1)
+    avgResult = avgResult.tolist()
     plt.title('Noiseprint for ' + str(fingerprint_device))
     plt.xlabel('query images')
-    plt.ylabel('PCE')
+    plt.ylabel(label)
 
-    plt.bar(natural_indices, pce_values)
-    plt.axhline(y=60, color='r', linestyle='-')
-    plt.xticks(natural_indices)
-    plt.savefig('plots/' +str(fingerprint_device)+'.png')
+    plt.bar(np.unique(natural_indices), avgResult)
+    # plt.axhline(y=60, color='r', linestyle='-')
+    plt.xticks(np.unique(natural_indices), rotation=90)
+    plt.tight_layout()
+    plt.savefig('plots/'+ label + '/' +str(fingerprint_device)+'.png')
 
     plt.clf()
     
@@ -143,13 +132,16 @@ def plot_roc_curve(stats_cc, stats_pce):
     plt.savefig('plots/' +'roc_curve_pce.png')
     roc_curve_cc.plot(linestyle='--', color='blue')
     plt.savefig('plots/' +'roc_curve_cc.png')
+    plt.clf()
 
-def plot_confusion_matrix(cm):
+def plot_confusion_matrix(cm, name):
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=fingerprint_device)
-    disp.plot(cmap=plt.cm.Blues, xticks_rotation=45)
+    fig, ax = plt.subplots(figsize=(10,10))
+    disp.plot(cmap=plt.cm.Blues, xticks_rotation=90, ax=ax)
     plt.grid(False)
     plt.tight_layout()
-    plt.savefig("cm.png", pad_inches=5)
+    plt.savefig('plots/'+name, pad_inches=5)
+    plt.clf()
 
 def test(k, w):
     # Computing Ground Truth
@@ -163,6 +155,10 @@ def test(k, w):
     print('Computing statistics cross correlation')
     stats_cc = stats(cc_aligned_rot, gt_)
     print('AUC on CC {:.2f}, expected {:.2f}'.format(stats_cc['auc'], 0.98))
+    accuracy_cc = accuracy_score(gt_.argmax(0), cc_aligned_rot.argmax(0))
+    print('Accuracy CC {:.2f}'.format(accuracy_cc))
+    cm_cc = confusion_matrix(gt_.argmax(0), cc_aligned_rot.argmax(0))
+    plot_confusion_matrix(cm_cc, "Confusion_matrix_CC.png")
 
     print('Computing PCE...')
     pce_rot = np.zeros((len(fingerprint_device), len(nat_device)))
@@ -172,39 +168,49 @@ def test(k, w):
         natural_indices = []    ###
         for natural_idx, natural_w in enumerate(w):
             cc2d = crosscorr_2d(fingerprint_k, natural_w)
-            euclidean_distance = np.linalg.norm(fingerprint_k - natural_w)
             prnu_pce = pce(cc2d)['pce']   ###
             pce_values.append(prnu_pce)   ###
             pce_rot[fingerprint_idx, natural_idx] = pce(cc2d)['pce']
             ###
-            natural_indices.append(natural_idx)
+            natural_indices.append(nat_device[natural_idx][:-2])
 
-        plot_device(fingerprint_device[fingerprint_idx], natural_indices, pce_values)
+        plot_device(fingerprint_device[fingerprint_idx], natural_indices, pce_values, "PCE")
 
     print('Computing statistics on PCE...')
     stats_pce = stats(pce_rot, gt_)
     print('AUC on PCE {:.2f}, expected {:.2f}'.format(stats_pce['auc'], 0.81))
+    accuracy_pce = accuracy_score(gt_.argmax(0), pce_rot.argmax(0))
+    print('Accuracy PCE {:.2f}'.format(accuracy_pce))
+    cm_pce = confusion_matrix(gt_.argmax(0), pce_rot.argmax(0))
+    plot_confusion_matrix(cm_pce, "Confusion_matrix_PCE.png")
 
     plot_roc_curve(stats_cc, stats_pce)
 
     print("Computing Euclidean Distance...")
-    euclidian_rot = np.zeros((len(fingerprint_device), len(nat_device)))
+    euclidean_rot = np.zeros((len(fingerprint_device), len(nat_device)))
 
     for fingerprint_idx, fingerprint_k in enumerate(k):
+        dist_values = []
+        natural_indices = []
         for natural_idx, natural_w in enumerate(w):
             dist = np.linalg.norm(fingerprint_k-natural_w)
-            euclidian_rot[fingerprint_idx, natural_idx] = dist
+            euclidean_rot[fingerprint_idx, natural_idx] = dist
+            dist_values.append(dist)
+            natural_indices.append(nat_device[natural_idx][:-2])
 
-    accuracy = accuracy_score(gt_.argmax(0), euclidian_rot.argmin(0))
-    cm = confusion_matrix(gt_.argmax(0), euclidian_rot.argmin(0))
-    print('Accuracy with Euclidean Distance {:.2f}'.format(accuracy))
+        plot_device(fingerprint_device[fingerprint_idx], natural_indices, dist_values, "EuclDist")
 
-    plot_confusion_matrix(cm)
+    accuracy_dist = accuracy_score(gt_.argmax(0), euclidean_rot.argmin(0))
+    cm_dist = confusion_matrix(gt_.argmax(0), euclidean_rot.argmin(0))
+    print('Accuracy with Euclidean Distance {:.2f}'.format(accuracy_dist))
+
+    plot_confusion_matrix(cm_dist, "Confusion_matrix_Euclidean_Distance.png")
 
 
 
 if __name__ == '__main__':
-    k = compute_noiseprints()
-    #k = load_noiseprints()
-    w = compute_residuals()
+    crop_size = (128, 128)
+    #k = compute_noiseprints(crop_size)
+    k = load_noiseprints()
+    w = compute_residuals(crop_size)
     test(k, w)

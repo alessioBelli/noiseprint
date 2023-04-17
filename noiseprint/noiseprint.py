@@ -37,7 +37,7 @@ def genNoiseprint(img, QF=101, model_name='net'):
         saver.restore(sess, chkpt_fname)
         
         if img.shape[0]*img.shape[1]>largeLimit:
-            print(' %dx%d large %3d' % (img.shape[0], img.shape[1], QF))
+            # print(' %dx%d large %3d' % (img.shape[0], img.shape[1], QF))
             # for large image the network is executed windows with partial overlapping 
             res = np.zeros((img.shape[0],img.shape[1]), np.float32)
             for index0 in range(0,img.shape[0],slide):
@@ -61,7 +61,7 @@ def genNoiseprint(img, QF=101, model_name='net'):
                     res[index0: min(index0+slide,  res.shape[0]), \
                         index1: min(index1+slide,  res.shape[1])]  = resB
         else:
-            print(' %dx%d small %3d' % (img.shape[0], img.shape[1], QF))
+            # print(' %dx%d small %3d' % (img.shape[0], img.shape[1], QF))
             res = sess.run(net.output, feed_dict={x_data: img[np.newaxis,:,:,np.newaxis]})
             res = np.squeeze(res)
     return res
