@@ -45,9 +45,10 @@ The images belonging to a specific camera should have the name in the form *Bran
 To run the code:
 
 ```
-python main_extraction.py
+python main_extraction.py -c dimention_squared_crop_size -n number_of_testing_images_per_camera
 ```
-Inside the main, you can choose the crop size used for computing the noiseprints. You must also state the number of test images for each device (just for visualization of the plots).
+
+You can choose the crop size used for computing the noiseprints with the parameter `-c`. You must also state the number of test images for each device (just for visualization of the plots) by using the parameter `-n`.
 The noiseprints of the cameras are saved in the `noiseprints` directory, while the charts showing the performance of the method are saved in the `plot` folder.
 
 ## How it works :gear:
