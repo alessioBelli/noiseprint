@@ -61,6 +61,7 @@ We perform the pairwise comparison between the noiseprints of the test images an
 - PCE (Peak to Correlation Energy)
 - Euclidean Distance
 
+
 According to the results, the latter is the most reliable method.
 
 ## Authors :man_technologist: :man_technologist:
