@@ -94,8 +94,8 @@ def compute_noiseprints(crop_size):
         noises = []
         for img_path in ff_dirlist[ff_device == device]:
             img, mode = imread2f(img_path, channel=1)
-            #img = cut_ctr(img, crop_size)
-            img = random_crop(img, crop_size)
+            img = cut_ctr(img, crop_size)
+            #img = random_crop(img, crop_size)
             try:
                 QF = jpeg_qtableinv(strimgfilenameeam)
             except:
@@ -121,8 +121,8 @@ def compute_residuals(crop_size):
     w=[]
     for img_path in tqdm.tqdm(nat_dirlist):
         img, mode = imread2f(img_path, channel=1)
-        #img = cut_ctr(img, crop_size)
-        img = random_crop(img, crop_size)
+        img = cut_ctr(img, crop_size)
+        #img = random_crop(img, crop_size)
         try:
             QF = jpeg_qtableinv(strimgfilenameeam)
         except:
