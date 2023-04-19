@@ -14,7 +14,7 @@
 # http://www.grip.unina.it/download/LICENSE_OPEN.txt
 #
 
-from sys import argv
+import argparse
 from time import time
 from noiseprint.noiseprint import genNoiseprint
 from noiseprint.utility.utilityRead import imread2f
@@ -105,11 +105,9 @@ def compute_residuals(crop_size):
         w+=[genNoiseprint(img,QF)]
     return w
 
-def plot_device(fingerprint_device, natural_indices, values, label):
-    # here we took 3 as our input
-    n = 10 #number of test images for each device
+def plot_device(fingerprint_device, natural_indices, values, label, n):
     avgResult = []
-    # calculates the average
+    # calculates the average (every n values of the array)
     avgResult = np.average(np.asarray(values).reshape(-1, n), axis=1)
     avgResult = avgResult.tolist()
     plt.title('Noiseprint for ' + str(fingerprint_device))
@@ -143,7 +141,7 @@ def plot_confusion_matrix(cm, name):
     plt.savefig('plots/'+name, pad_inches=5)
     plt.clf()
 
-def test(k, w):
+def test(k, w, n):
     # Computing Ground Truth
     # gt function return a matrix where the number of rows is equal to the number of cameras used for computing the fingerprints, and number of columns equal to the number of natural images
     # True means that the image is taken with the camera of the specific row
@@ -164,17 +162,16 @@ def test(k, w):
     pce_rot = np.zeros((len(fingerprint_device), len(nat_device)))
 
     for fingerprint_idx, fingerprint_k in enumerate(k):
-        pce_values = []   ###
-        natural_indices = []    ###
+        pce_values = []
+        natural_indices = []
         for natural_idx, natural_w in enumerate(w):
             cc2d = crosscorr_2d(fingerprint_k, natural_w)
-            prnu_pce = pce(cc2d)['pce']   ###
-            pce_values.append(prnu_pce)   ###
+            prnu_pce = pce(cc2d)['pce']
+            pce_values.append(prnu_pce)
             pce_rot[fingerprint_idx, natural_idx] = pce(cc2d)['pce']
-            ###
             natural_indices.append(nat_device[natural_idx][:-2])
 
-        plot_device(fingerprint_device[fingerprint_idx], natural_indices, pce_values, "PCE")
+        plot_device(fingerprint_device[fingerprint_idx], natural_indices, pce_values, "PCE", n)
 
     print('Computing statistics on PCE...')
     stats_pce = stats(pce_rot, gt_)
@@ -198,7 +195,7 @@ def test(k, w):
             dist_values.append(dist)
             natural_indices.append(nat_device[natural_idx][:-2])
 
-        plot_device(fingerprint_device[fingerprint_idx], natural_indices, dist_values, "EuclDist")
+        plot_device(fingerprint_device[fingerprint_idx], natural_indices, dist_values, "EuclDist", n)
 
     accuracy_dist = accuracy_score(gt_.argmax(0), euclidean_rot.argmin(0))
     cm_dist = confusion_matrix(gt_.argmax(0), euclidean_rot.argmin(0))
@@ -209,8 +206,16 @@ def test(k, w):
 
 
 if __name__ == '__main__':
-    crop_size = (128, 128)
-    #k = compute_noiseprints(crop_size)
-    k = load_noiseprints()
+
+    parser = argparse.ArgumentParser(description="Noiseprint extraction", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-c", "--crop_size", type=int, action="store", help="Specifies the crop size", required=True)
+    parser.add_argument("-n", "--test_images", type=int, action="store", help="Specifies the # of test images for each device", required=True)
+    args = parser.parse_args()
+
+
+    crop_size = (args.crop_size, args.crop_size)
+    n = args.test_images
+    k = compute_noiseprints(crop_size)    #comment this line if the fingerprint are already computed, and uncomment the line below
+    #k = load_noiseprints()
     w = compute_residuals(crop_size)
-    test(k, w)
+    test(k, w, n)

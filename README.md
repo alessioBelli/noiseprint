@@ -2,8 +2,9 @@
 [Noiseprint](https://ieeexplore.ieee.org/document/8713484) is a CNN-based camera model fingerprint
 extracted by a fully Convolutional Neural Network (CNN).
 
-## License
+## License :page_with_curl:
 Copyright (c) 2019 Image Processing Research Group of University Federico II of Naples ('GRIP-UNINA').
+Modified by Alberto Casagrande and Alessio Belli (University of Trento) in collaboration with the research group from the University of Bergen.
 
 All rights reserved.
 
@@ -13,7 +14,7 @@ By downloading and/or using any of these files, you implicitly agree to all the
 terms of the license, as specified in the document LICENSE.txt
 (included in this package) 
 
-## Installation
+## Installation :wrench:
 The code requires Python 3.5 and Tensorflow 1.2.1 .
 In order to install everything that is needed, create and activate a conda environment through the following command:
 ```
@@ -37,49 +38,37 @@ Install the requested libraries using:
 cat noiseprint/requirements-cpu.txt | xargs -n 1 -L 1 pip install
 ```
 
+## Usage :key:
+Firstly, the dataset has to be included in the `data` folder, divided in training (`train`) and testing (`test`) images.
+The images belonging to a specific camera should have the name in the form *Brand_Model_ID_i.jpg* (example: *Apple_iPhone6_0_0.jpg*). 
 
-## Usage
-To extract the noiseprint, run:
-
-```
-python main_extraction.py <input image> <output mat/npz file>
-```
-
-The noiseprint is saved in a file with extension mat or npz.
-To show the saved noiseprint, run:
+To run the code:
 
 ```
-python main_showout.py <input image> <output mat/npz file>
+python main_extraction.py -c dimention_squared_crop_size -n number_of_testing_images_per_camera
 ```
 
-While to execute the blind localization method, run:
+You can choose the crop size used for computing the noiseprints with the parameter `-c`. You must also state the number of test images for each device (just for visualization of the plots) by using the parameter `-n`.
+The noiseprints of the cameras are saved in the `noiseprints` directory, while the charts showing the performance of the method are saved in the `plot` folder.
 
-```
-python main_blind.py <input image> <output mat/npz file>
-```
+## How it works :gear:
+### Training
+The noiseprint characterizing each device is computed by making the average over the noiseprints of the images belonging to the specific device.
 
-The heatmap is saved in a file with extension mat or npz.
-To show the result, run:
-
-```
-python main_showres.py <input image> <gt image> <output mat/npz file>
-```
-
-To convert the heatmap in a png image, run:
-
-```
-python main_map2uint8.py <output mat/npz file> <output png file>
-```
+### Testing
+We perform the pairwise comparison between the noiseprints of the test images and the cameras fingerprints using different methods:
+- Cross correlation
+- PCE (Peak to Correlation Energy)
+- Euclidean Distance
 
 
-### Demo
-To execute the demo, run the script
+According to the results, the latter is the most reliable method.
 
-```
-cd ./demo
-./demo_extraction.sh
-./demo_heatmap.sh
-```
+## Authors :man_technologist: :man_technologist:
+
+**Alberto Casagrande**
+
+**Alessio Belli**
 
 ## Reference
 
@@ -94,3 +83,4 @@ cd ./demo
   volume={15}
 } 
 ```
+The reference code can be found [here](https://github.com/grip-unina/noiseprint)
