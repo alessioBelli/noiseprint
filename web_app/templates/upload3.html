@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Upload</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+
+	body {
+		font-family: 'Helvetica Neue', sans-serif;
+		background-color: #f0f0f0;
+	}
+
+	h1 {
+		text-align: center;
+		margin-top: 50px;
+		color: #333;
+	}
+
+	form {
+		max-width: 500px;
+		margin: 50px auto;
+		padding: 30px;
+		border-radius: 10px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+	}
+
+	.form-group {
+		margin-bottom: 20px;
+	}
+
+	label {
+		display: block;
+		margin-bottom: 10px;
+		color: #333;
+	}
+
+	.upload-area {
+		height: 100px;
+		border: 2px dashed #ccc;
+		line-height: 100px;
+		text-align: center;
+		font-size: 20px;
+		color: #ccc;
+	}
+
+	.upload-area:hover {
+		background-color: #f9f9f9;
+	}
+
+	button[type="submit"] {
+		display: block;
+		width: 100%;
+		background-color: #4CAF50;
+		color: white;
+		border-radius: 5px;
+	}
+
+	.form-control,
+	.btn {
+		display: block;
+		width: 100%;
+	}
+
+	.form-control:focus,
+	.btn:focus,
+	.btn:hover {
+		outline: none !important;
+		box-shadow: none !important;
+	}
+
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Upload</h1>
+        <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Select Image:</label>
+                <input type="file" id="file" name="file" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Or drag and drop image here:</label>
+                <div class="upload-area" id="upload-area">Drag and Drop Image Here</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        
+var fileInput = document.getElementById('file');
+var uploadArea = document.getElementById('upload-area');
+
+fileInput.addEventListener('change', function() {
+    if (fileInput.files.length > 0) {
+        uploadArea.style.backgroundColor = '#4CAF50';
+        uploadArea.style.color = 'white';
+        uploadArea.innerHTML = 'Image Selected!';
+        setTimeout(function() {
+            uploadArea.style.backgroundColor = '';
+            uploadArea.style.color = '#ccc';
+            uploadArea.innerHTML = 'Drag and Drop Image Here';
+        }, 1500);
+    }
+});
+
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var files = e.dataTransfer.files;
+    fileInput.files = files;
+
+    uploadArea.style.backgroundColor = '#4CAF50';
+    uploadArea.style.color = 'white';
+    uploadArea.innerHTML = 'Image Selected!';
+    setTimeout(function() {
+        uploadArea.style.backgroundColor = '';
+        uploadArea.style.color = '#ccc';
+        uploadArea.innerHTML = 'Drag and Drop Image Here';
+    }, 1500);
+});
+
+    </script>
+</body>
+</html>

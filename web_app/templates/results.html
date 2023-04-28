@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Results</title>
+	<!-- Include Material Design CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu|Lora">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@600&family=Poppins:wght@300&family=Ubuntu:wght@500&display=swap" rel="stylesheet">
+	<!-- Add custom styles -->
+	<style>
+		.container {
+			margin-top: 30px;
+		}
+		.card {
+			border-radius: 8px;
+			box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+			overflow: hidden;
+		}
+		.card-image {
+			height: 100%;
+			overflow: hidden;
+		}
+		.card-image img {
+			object-fit: cover;
+			height: 100%;
+			width: 100%;
+		}
+		.card-content {
+			padding: 24px;
+			background-color: #f2f2f2;
+			color: #212121;
+		}
+		.section {
+			background-color: #e0e0e0;
+			padding: 30px 0;
+			margin-top: 50px;
+			border-radius: 8px;
+			box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);
+			overflow: hidden;
+		}
+		.section-content {
+			padding: 24px;
+			color: #212121;
+		}
+	</style>
+</head>
+<body>
+	<!-- Add a navigation menu at the top of the page -->
+	<nav>
+		 <div class="nav-wrapper" style="background-color: rgb(76, 183, 133);">
+			<a href="#" class="brand-logo">Logo</a>
+			<ul id="nav-mobile" class="right hide-on-med-and-down">
+				<li><a href="#">Menu Item 1</a></li>
+				<li><a href="#">Menu Item 2</a></li>
+				<li><a href="#">Menu Item 3</a></li>
+			</ul>
+		 </div>
+	</nav>
+	
+	<!-- Create a container for the page content -->
+	<div class="container" style="font-family: Ubuntu, sans-serif;">
+		<!-- Add a row to divide the page into two columns -->
+		<div class="row">
+			<!-- Add a column for the image on the right side -->
+			<div class="col s12 m6">
+                <div class="card">
+					<div class="card-content">
+						<h4>EXIF Metadata</h4>
+						<div style="overflow-y: auto;">
+							<table>
+								{% for key,value in metadata.items() %}
+								<tr>
+									<td style="text-transform: capitalize; font-family: Ubuntu, sans-serif; font-weight: 500;">{{ key }}</td>
+									<td style="text-transform: capitalize; padding-left: 40px;">{{ value }}</td>
+								</tr>
+								{% endfor %}
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Add a column for the information on the left side -->
+			<div class="col s12 m6">
+				<div class="card" >
+					<div class="card-content" style="padding:5px; text-align: center;">
+						<h4>Your image</h4>
+					</div>
+				</div>
+                <div class="card">
+					<div class="card-image">
+						<img src="{{url_for('send_image', filename=filename)}}" alt="Placeholder Image">
+					</div>
+				</div>
+                <!-- Add a section below the image and information -->
+                <div class="section">
+                    <div class="section-content">
+                        <h2>Section Heading</h2>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis enim vel leo
+                    </div>
+                </div>
+			</div>
+		</div>
+    </div>
+
+</body>
+</html>
